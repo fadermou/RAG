@@ -17,6 +17,7 @@ urlpatterns = [
 
     path("register/", register_page, name="register-page"),
     path("upload/", upload_page, name="upload-page"),
+    # path("query/", upload_page, name="query-page"),
     path("login/", login_page, name="login-page"),
     path("logout/", logout_page, name="logout-page"),
 

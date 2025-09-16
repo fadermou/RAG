@@ -66,7 +66,7 @@ document.getElementById("query-form").addEventListener("submit", async (e) => {
   const query = document.getElementById("query").value;
 
   try {
-    const res = await fetch("/api/query/", { // replace with your query API
+    const res = await fetch("/user/query/", { // replace with your query API
       method: "POST",
       headers: {
         "Content-Type": "application/json",

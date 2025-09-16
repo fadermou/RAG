@@ -96,6 +96,7 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

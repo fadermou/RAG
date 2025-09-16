@@ -15,7 +15,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.decorators import login_required
 from backend.services.document_service import process_document, search_similar_chunks
-# from .rag_service import generate_answer  # the OpenAI/Claude call ##########
+from backend.services.rag_service import generate_answer  
 
 
 
@@ -24,13 +24,14 @@ from backend.services.document_service import process_document, search_similar_c
 @csrf_exempt  # since frontend posts JSON, CSRF is not needed
 def login_page(request):
     if request.method == "POST":
-        print("Login POST request received\n")
-        data = json.loads(request.body)
+        import json
+        data = json.loads(request.body)  # since fetch sends JSON
         username = data.get("username")
         password = data.get("password")
+        user = authenticate(request, username=username, password=password)
 
-        user = authenticate(username=username, password=password)
         if user:
+            from rest_framework_simplejwt.tokens import RefreshToken
             refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 "success": True,
@@ -41,9 +42,8 @@ def login_page(request):
         else:
             return JsonResponse({
                 "success": False,
-                "error": "Invalid username or password"
-            })
-
+                "detail": "Invalid username or password"
+            }, status=401)
     return render(request, "login.html")
 
 
@@ -57,8 +57,8 @@ def logout_page(request):
 
 
 # ----- UPLOAD VIEW -----
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
 def upload_page(request):
     answer = None
 

@@ -15,107 +15,42 @@
 <p id="login-debug" style="color:blue;"></p>
 
 <script>
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
   
-  // Clear previous messages
-  document.getElementById("login-error").textContent = "";
-  document.getElementById("login-success").textContent = "";
-  document.getElementById("login-debug").textContent = "";
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
   
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  
-  if (!username || !password) {
-    document.getElementById("login-error").textContent = "Please fill in both fields";
-    return;
-  }
-  
-  document.getElementById("login-debug").textContent = "Logging in...";
-  
-  try {
-    console.log("Attempting login for:", username);
-    
-    const res = await fetch("/user/login/", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({username, password})
-    });
-    
-    console.log("Response status:", res.status);
-    console.log("Response ok:", res.ok);
-    
-    const data = await res.json();
-    console.log("Response data:", data);
-    
-    if (res.ok && data.success) {
-      console.log("Login successful!");
-      
-      // Check if we have tokens
-      if (!data.access) {
-        console.error("No access token in response");
-        document.getElementById("login-error").textContent = "Login response missing access token";
-        return;
-      }
-      
-      document.getElementById("login-success").textContent = "Login successful! Saving tokens...";
+    if (!username || !password) {
+      document.getElementById("login-error").textContent = "Please fill in both fields";
       return;
-      try {
-        // Save tokens to localStorage
-        localStorage.setItem("accessToken", data.access);
-        if (data.refresh) {
-          localStorage.setItem("refreshToken", data.refresh);
-        }
-        console.log("Tokens saved successfully");
-        
-        // Verify tokens were saved
-        const savedAccess = localStorage.getItem("accessToken");
-        const savedRefresh = localStorage.getItem("refreshToken");
-        console.log("Saved access token:", savedAccess ? savedAccess.substring(0, 20) + "..." : "NOT SAVED");
-        console.log("Saved refresh token:", savedRefresh ? savedRefresh.substring(0, 20) + "..." : "NOT SAVED");
-        
-        document.getElementById("login-success").textContent = "Tokens saved! Redirecting...";
-        
-        // Redirect after a short delay
-        const redirectUrl = data.redirect || "/user/upload/";
-        console.log("Redirecting to:", redirectUrl);
-        
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 1000);
-        
-      } catch (storageError) {
-        console.error("Error saving to localStorage:", storageError);
-        document.getElementById("login-error").textContent = "Error saving login tokens: " + storageError.message;
-      }
-      
-    } else {
-      console.error("Login failed:", data);
-      document.getElementById("login-error").textContent = data.error || data.detail || "Login failed";
-      document.getElementById("login-debug").textContent = "";
     }
-    
-  } catch (err) {
-    console.error("Network/Parse error:", err);
-    document.getElementById("login-error").textContent = "Network error: " + err.message;
-    document.getElementById("login-debug").textContent = "";
-  }
-});
-
-// Debug info on page load
-window.addEventListener('DOMContentLoaded', () => {
-  console.log("Login page loaded");
   
-  // Check if already logged in
-  try {
-    const existingToken = localStorage.getItem("accessToken");
-    if (existingToken) {
-      console.log("Existing token found:", existingToken.substring(0, 20) + "...");
-      document.getElementById("login-debug").textContent = "You may already be logged in";
+    try {
+      const res = await fetch("/user/login/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok && data.success) {
+        // Save tokens
+        localStorage.setItem("accessToken", data.access);
+        if (data.refresh) localStorage.setItem("refreshToken", data.refresh);
+  
+        // Redirect using the redirect value returned by backend
+        const redirectUrl = data.redirect || "/user/upload/";
+        window.location.href = redirectUrl;
+      } else {
+        // Show error from backend
+        document.getElementById("login-error").textContent = data.error || data.detail || "Login failed";
+      }
+    } catch (err) {
+      document.getElementById("login-error").textContent = "Network error";
     }
-  } catch (e) {
-    console.log("Could not check localStorage:", e);
-  }
-});
-</script>
+  });
+  </script>
+  
 {% endblock %}
