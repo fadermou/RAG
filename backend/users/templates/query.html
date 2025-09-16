@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Ask a Question{% endblock %}
+
+{% block content %}
+<h2>Ask a Question</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <input type="text" name="query" placeholder="Enter your question..." required>
+  <button type="submit">Ask</button>
+</form>
+
+{% if answer %}
+<div class="answer-box">
+    <strong>Answer:</strong>
+    <p>{{ answer }}</p>
+</div>
+{% endif %}
+{% endblock %}

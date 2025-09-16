@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}RAG System{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'documents/style.css' %}">
+</head>
+<body>
+<nav>
+    {% if user.is_authenticated %}
+        <a href="{% url 'upload-page' %}">Upload</a> |
+        <a href="{% url 'query-page' %}">Ask</a> |
+        <a href="{% url 'logout-page' %}">Logout</a>
+    {% else %}
+        <a href="{% url 'login-page' %}">Login</a> |
+        <a href="{% url 'register-page' %}">Sign Up</a>
+    {% endif %}
+</nav>
+
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+</body>
+</html>
+

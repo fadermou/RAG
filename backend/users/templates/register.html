@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<h2>Sign Up</h2>
+
+<form id="register-form">
+  <input type="text" id="username" placeholder="Username" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button type="submit">Register</button>
+</form>
+
+<p id="register-error" style="color: red;"></p>
+
+<script>
+document.getElementById("register-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    const res = await fetch("/user/api/register/", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Success → store tokens
+      localStorage.setItem("accessToken", data.access);
+      localStorage.setItem("refreshToken", data.refresh);
+
+      // Redirect to login or upload page
+      window.location.href = "/user/login/";
+    } else {
+      // Show error message under form instead of alert
+      document.getElementById("register-error").textContent = data.detail || "Registration failed";
+    }
+  } catch (err) {
+    document.getElementById("register-error").textContent = "Network error";
+  }
+});
+</script>
+{% endblock %}

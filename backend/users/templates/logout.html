@@ -1,0 +1,10 @@
+<nav>
+    {% if user.is_authenticated %}
+      <a href="{% url 'upload-page' %}">Upload</a>
+      <a href="{% url 'query-page' %}">Ask</a>
+      <a href="{% url 'logout-page' %}">Logout</a>
+    {% else %}
+      <a href="{% url 'login-page' %}">Login</a>
+    {% endif %}
+  </nav>
+  
