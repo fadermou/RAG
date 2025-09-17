@@ -1,2 +1,8 @@
-knowledge
+# Environment
 .env
+
+# Knowledge
+knowledge/*
+# Editor directories and files
+.vscode/*
+.DS_Store
