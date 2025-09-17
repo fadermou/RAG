@@ -29,15 +29,15 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
     const data = await res.json();
 
     if (res.ok) {
-      // Success → store tokens
+      console.log("SAAALAAAM")
       localStorage.setItem("accessToken", data.access);
       localStorage.setItem("refreshToken", data.refresh);
 
-      // Redirect to login or upload page
-      window.location.href = "/user/login/";
+      // Redirect to home since user is already authenticated
+      window.location.href = "/user/upload";
     } else {
-      // Show error message under form instead of alert
-      document.getElementById("register-error").textContent = data.detail || "Registration failed";
+      document.getElementById("register-error").textContent =
+        data.detail || "Registration failed";
     }
   } catch (err) {
     document.getElementById("register-error").textContent = "Network error";

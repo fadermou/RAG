@@ -5,80 +5,152 @@
 {% block content %}
 <h2>RAG System</h2>
 
-<!-- Upload Section -->
-<section id="upload-section">
-  <h3>Upload Document</h3>
-  <form id="upload-form">
-    <input type="text" id="title" placeholder="Document Title" required>
-    <input type="url" id="source" placeholder="Source URL (optional)">
-    <input type="file" id="file">
-    <button type="submit">Upload</button>
+<!-- Chat Section -->
+<section id="chat-section">
+  <h3>Chat with RAG</h3>
+  <form id="chat-form">
+    <textarea id="message" placeholder="Type your question or message..." rows="3"></textarea>
+    <input type="file" id="file" multiple>
+    <button type="submit">Send</button>
   </form>
-  <p id="upload-message" style="color: lightgreen;"></p>
-</section>
-
-<hr>
-
-<!-- Query Section -->
-<section id="query-section">
-  <h3>Ask a Question</h3>
-  <form id="query-form">
-    <input type="text" id="query" placeholder="Enter your question..." required>
-    <button type="submit">Ask</button>
-  </form>
-  <div id="answer" style="margin-top: 10px; color: lightblue;"></div>
+  <div id="chat-box" style="margin-top: 15px; max-height: 400px; overflow-y: auto; border: 1px solid #555; padding: 10px; border-radius: 5px;">
+    <!-- Messages will appear here -->
+  </div>
 </section>
 
 <script>
-// Redirect if not authenticated
+// Check JWT token
 const token = localStorage.getItem("accessToken");
-if (!token) window.location.href = "/user/login/";
+if (!token) {
+    window.location.href = "/user/login/";
+}
 
-// Upload Document
-document.getElementById("upload-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const formData = new FormData();
-  formData.append("title", document.getElementById("title").value);
-  formData.append("source", document.getElementById("source").value);
-  const file = document.getElementById("file").files[0];
-  if (file) formData.append("file", file);
+const chatForm = document.getElementById("chat-form");
+const chatBox = document.getElementById("chat-box");
 
-  try {
-    const res = await fetch("/documents/upload", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${token}` },
-      body: formData
-    });
-    const data = await res.json();
-    if (res.ok) {
-      document.getElementById("upload-message").textContent = "Upload successful!";
-    } else {
-      document.getElementById("upload-message").textContent = data.detail || "Upload failed";
+function addMessage(role, text) {
+    const msg = document.createElement("div");
+    msg.style.margin = "8px 0";
+    msg.innerHTML = `<b style="color:${role === "user" ? "lightgreen" : "lightblue"}">${role}:</b> ${text}`;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// chatForm.addEventListener("submit", async (e) => {
+//     e.preventDefault();
+//     const message = document.getElementById("message").value.trim();
+//     const files = document.getElementById("file").files;
+
+//     if (!message && files.length === 0) {
+//         return alert("Please enter a message or select a file.");
+//     }
+
+//     const formData = new FormData();
+//     if (message) formData.append("message", message);
+//     for (let i = 0; i < files.length; i++) {
+//         formData.append("files", files[i]);
+//     }
+
+//     // Show user message immediately
+//     if (message) addMessage("user", message);
+//     if (files.length > 0) addMessage("user", `[📄 ${files.length} file(s) uploaded]`);
+
+//     try {
+//         const res = await fetch("/user/chat/", {  // new endpoint
+//             method: "POST",
+//             headers: { "Authorization": `Bearer ${token}` }, 
+//             body: formData
+//         });
+//         const data = await res.json();
+//         addMessage("assistant", data.answer || "No answer returned");
+//     } catch (err) {
+//         addMessage("assistant", "Network error");
+//     }
+
+//     // Reset input fields
+//     document.getElementById("message").value = "";
+//     document.getElementById("file").value = "";
+// });
+
+chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const message = document.getElementById("message").value.trim();
+    const files = document.getElementById("file").files;
+
+    if (!message && files.length === 0) {
+        return alert("Please enter a message or select a file.");
     }
-  } catch (err) {
-    document.getElementById("upload-message").textContent = "Network error";
-  }
-});
 
-// Query
-document.getElementById("query-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const query = document.getElementById("query").value;
+    const formData = new FormData();
+    if (message) formData.append("message", message);
+    for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+    }
 
-  try {
-    const res = await fetch("/user/query/", { // replace with your query API
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ query })
-    });
-    const data = await res.json();
-    document.getElementById("answer").textContent = data.answer || "No answer returned";
-  } catch (err) {
-    document.getElementById("answer").textContent = "Network error";
-  }
+    // Show user message immediately
+    if (message) addMessage("user", message);
+    if (files.length > 0) addMessage("user", `[📄 ${files.length} file(s) uploaded]`);
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        alert("You are not logged in.");
+        window.location.href = "/user/login/";
+        return;
+    }
+
+    try {
+        const res = await fetch("/user/chat/", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
+        });
+
+        // Read response body once
+        const text = await res.text();
+        
+        // Check if we got a valid response
+        if (!text) {
+            addMessage("assistant", "Server returned empty response");
+            return;
+        }
+
+        // Check if response is HTML (error page) instead of JSON
+        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+            console.error("Server returned HTML error page:", text);
+            addMessage("assistant", `Server error (${res.status}): The server encountered an internal error`);
+            return;
+        }
+
+        let data = null;
+
+        try {
+            data = JSON.parse(text);
+        } catch (parseErr) {
+            console.error("Failed to parse JSON:", parseErr);
+            console.error("Server response (raw):", text.substring(0, 200) + "..."); // Limit log output
+            addMessage("assistant", "Server error: received invalid response format");
+            return;
+        }
+
+        // Handle response based on status
+        if (res.ok) {
+            addMessage("assistant", data.answer || "No answer returned");
+        } else {
+            // Server returned an error status with JSON
+            const errorMessage = data.detail || data.message || `Server error (${res.status})`;
+            addMessage("assistant", errorMessage);
+            console.error("Server error:", res.status, errorMessage);
+        }
+
+    } catch (err) {
+        console.error("Network/Request error:", err);
+        addMessage("assistant", "Connection error: Unable to reach server");
+    } finally {
+        // Always reset input fields, regardless of success or failure
+        document.getElementById("message").value = "";
+        document.getElementById("file").value = "";
+    }
 });
 </script>
 {% endblock %}

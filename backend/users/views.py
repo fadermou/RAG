@@ -1,4 +1,4 @@
-import json
+import os
 from rest_framework import status
 from django.contrib import messages
 from django.db import IntegrityError
@@ -9,18 +9,16 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, logout
+from backend.services.rag_service import generate_answer  
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth.decorators import login_required
 from backend.services.document_service import process_document, search_similar_chunks
-from backend.services.rag_service import generate_answer  
 
 
 
-# ----- LOGIN VIEW -----from django.contrib.auth import authenticate
-
+# ----- LOGIN VIEW -----
 @csrf_exempt  # since frontend posts JSON, CSRF is not needed
 def login_page(request):
     if request.method == "POST":
@@ -29,9 +27,7 @@ def login_page(request):
         username = data.get("username")
         password = data.get("password")
         user = authenticate(request, username=username, password=password)
-
         if user:
-            from rest_framework_simplejwt.tokens import RefreshToken
             refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 "success": True,
@@ -55,10 +51,9 @@ def logout_page(request):
     return redirect("login-page")
 
 
-
 # ----- UPLOAD VIEW -----
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST'])
 def upload_page(request):
     answer = None
 
@@ -101,26 +96,7 @@ def upload_page(request):
 
 # ----- REGISTER VIEW -----
 def register_page(request):
-
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        email = request.POST.get("email")
-
-        if not username or not password or not email:
-            messages.error(request, "All fields are required.")
-            return render(request, "register.html")
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
-            return render(request, "register.html")
-
-        User.objects.create_user(username=username, password=password, email=email)
-        messages.success(request, "Registration successful! Please log in.")
-        return redirect("login-page")
-
-    return render(request, "register.html")
-
+    return render(request, "register.html")  # Just render the page
 
 # ----- REGISTER VIEW for JS + JWT-----
 class RegisterAPIView(APIView):
@@ -150,3 +126,47 @@ class RegisterAPIView(APIView):
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         }, status=status.HTTP_201_CREATED)
+
+
+# ----- CHAT VIEW -----
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # ensure upload folder exists
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def chat_view(request):
+    try:
+        message = request.data.get("message", "").strip()
+        files = request.FILES.getlist("files")
+
+        response_text = ""
+
+        # Case 1: Files uploaded
+        if files:
+            for f in files:
+                file_path = os.path.join(UPLOAD_DIR, f.name)
+                with open(file_path, "wb+") as dest:
+                    for chunk in f.chunks():
+                        dest.write(chunk)
+            response_text += f"✅ Uploaded {len(files)} file(s). "
+
+        # Case 2: Message (query)
+        if message:
+            # Hook into your RAG pipeline here
+            rag_answer = f"I received your question: '{message}'."
+            response_text += rag_answer
+
+        if not response_text:
+            return Response(
+                {"detail": "Please provide a message or file."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response({"answer": response_text}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        # Catch all errors and return JSON
+        return Response(
+            {"detail": f"Server error: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

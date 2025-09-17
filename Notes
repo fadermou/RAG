@@ -10,12 +10,14 @@ docker volume ls
 sudo docker volume inspect rag_pgdata
 
 
+ADD LOGOUT AND REMOVE LOGIN AND SIGN UP FROM THE PAGE
+
 
 #### check models in DOCUMENTS later and VIEWS
 #### show how database is structured
 #### and how serilize works in views
 
-
+ROMEVE : "########"
 
 FOR DOCUMENTS.URLS AND PROJECT URLS:
 BUT WHATS THIS
