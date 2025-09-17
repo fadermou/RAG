@@ -170,13 +170,6 @@ project/
 - **CI/CD Pipeline**: Set up automated testing and deployment workflows
 
 
-## 🙏 Acknowledgments
-
-- OpenAI for GPT Turbo API
-- Qdrant for vector database capabilities
-- SentenceTransformers for embedding models
-- Django community for the excellent framework
-
 ## 📺 Demo Video
 The demo.mov file is too large to host on GitHub. You can download it here: [demo.mov](https://drive.google.com/drive/folders/1PJJwJxrH40OpxudnMW684nPwcu_YQxzC)
 
