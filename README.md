@@ -124,30 +124,32 @@ AI: "The key findings from your document are..."
 - **Answer Generation**: OpenAI GPT generates grounded responses
 
 
-## 🔒 Security Features
+## 🔒 Security Features (Implemented / Planned)
 
-- ✅ JWT-based authentication
-- ✅ User-scoped document access
-- ✅ Environment-based configuration  
-- 🔄 Input validation (file type checking, PDF text cleaning for database compatibility)
-- 📋 Planned: CORS protection, enhanced input sanitization
+### ✅ Implemented
+- JWT-based authentication
+- User-scoped document access
+- Environment-based configuration
+
+### 🔄 In Progress
+- Input validation (file type checking, PDF text cleaning for database compatibility)
+
+### 📋 Planned
+- CORS protection
+- Enhanced input sanitization
 
 ## 📁 Project Structure
 
 ```
 project/
-├── backend/
-│   ├── backend/          # Django settings & config
-│   ├── documents/        # Document models & management
-│   ├── users/           # Authentication & chat views
-│   └── services/        # RAG pipeline (embeddings, vector search, OpenAI)
-├── users/
-│   ├── static/          # CSS & JavaScript files
-│   └── templates/       # HTML templates
-├── uploads/             # User uploaded files
-├── docker-compose.yml   # Container orchestration
-├── Dockerfile          # Backend container
-└── Makefile            # Development commands
+├── backend/             # Django settings & config
+├── documents/           # Document models & management
+├── users/              # Authentication, chat views, static files & templates
+├── uploads/            # User uploaded files
+├── manage.py           # Django management script
+├── requirements.txt    # Python dependencies
+├── init_qdrant.py     # Qdrant initialization script
+├── Dockerfile         # Backend container
 ```
 
 
