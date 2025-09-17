@@ -25,11 +25,11 @@ The system follows a modern RAG architecture:
 ## 🛠️ Tech Stack
 
 - **Backend**: Django REST Framework *(chose over FastAPI for faster development)*
-- **Database**: PostgreSQL + Django ORM *(instead of SQLAlchemy + Alembic)*
+- **Database**: PostgreSQL
 - **Vector Database**: Qdrant 
 - **AI/ML**: OpenAI GPT, SentenceTransformers
 - **Authentication**: JWT tokens
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Frontend**: HTML5, CSS3, JavaScript 
 - **Deployment**: Docker, Docker Compose
 
 
@@ -56,7 +56,10 @@ The system follows a modern RAG architecture:
 
 3. **Start the services**
    ```bash
-   make
+   make all     # Start all services with docker-compose up --build
+   make clean   # Stop and remove containers with volumes
+   make fclean  # Complete cleanup (containers, volumes, system prune)
+   make re      # Restart everything (clean + rebuild)
    ```
 
 4. **Access the application**
@@ -150,6 +153,8 @@ project/
 ├── requirements.txt    # Python dependencies
 ├── init_qdrant.py     # Qdrant initialization script
 ├── Dockerfile         # Backend container
+└── db.sqlite3         # SQLite database (development)
+
 ```
 
 
@@ -170,6 +175,8 @@ project/
 - Qdrant for vector database capabilities
 - SentenceTransformers for embedding models
 - Django community for the excellent framework
+
+## 📺 Demo Video
 
 ---
 
