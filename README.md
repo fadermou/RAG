@@ -89,12 +89,13 @@ The system follows a modern RAG architecture:
 
 ## 🚀 API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/user/login/` | POST | User authentication |
-| `/user/register/` | POST | User registration |
-| `/user/chat/` | POST | Upload documents & ask questions |
-| `/user/upload/` | GET | Main chat interface |
+| Endpoint        | Method | Description                  |
+|-----------------|--------|------------------------------|
+| `/user/login/`  | POST   | User authentication          |
+| `/user/register/` | POST | User registration            |
+| `/user/chat/`   | POST   | Upload documents & ask Qs    |
+| `/user/upload/` | GET    | Display upload/chat interface|
+| `/user/upload/` | POST   | Upload a document            |
 
 ## 💡 Usage Examples
 
