@@ -1,5 +1,3 @@
-# back_end/services/document_service.py
-import uuid
 from typing import List
 from .qdrant_service import qdrant_client
 from .embedding_service import embed_text

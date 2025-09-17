@@ -9,12 +9,11 @@ services:
         python manage.py shell -c 'from backend.services.qdrant_service import init_qdrant; init_qdrant()' || true &&
         python manage.py runserver 0.0.0.0:8000
       "
-
     build: 
-     context: ./backend
+     context: ./project
     restart: always
     volumes:
-      - ./backend/:/backend
+      - ./project/:/backend
     ports:
       - '8000:8000'
     env_file:
@@ -25,7 +24,6 @@ services:
     networks:
       - app-network
 
-  
   postgresql:
     container_name: postgresql
     image: postgres:15
