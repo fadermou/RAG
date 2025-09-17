@@ -3,6 +3,13 @@ services:
 
   backend:
     container_name: backend
+    command: | 
+      sh -c "
+        python manage.py migrate &&
+        python manage.py shell -c 'from backend.services.qdrant_service import init_qdrant; init_qdrant()' || true &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+
     build: 
      context: ./backend
     restart: always
@@ -46,6 +53,11 @@ services:
       - qdrant_storage:/qdrant/storage
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   pgdata:

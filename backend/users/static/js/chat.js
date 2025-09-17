@@ -5,6 +5,17 @@ const selectedFilesContainer = document.getElementById('selectedFiles');
 const chatForm = document.getElementById('chatForm');
 const sendButton = document.getElementById('sendButton');
 
+
+document.getElementById('logoutButton').addEventListener('click', function() {
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear stored tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        
+        // Redirect to login
+        window.location.href = '/user/login/';
+    }
+});
 let selectedFiles = [];
 
 // Auto-resize textarea

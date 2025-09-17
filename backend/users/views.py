@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, PyPDF2
 from rest_framework import status
 from django.contrib import messages
 from django.db import IntegrityError
@@ -16,8 +16,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from backend.services.document_service import process_document, search_similar_chunks
 
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 
 # ----- LOGIN VIEW -----
 @csrf_exempt  # since frontend posts JSON, CSRF is not needed
@@ -139,16 +140,59 @@ def chat_page(request):
         
         response_text = ""
         
+        # Handle file uploads
         if files:
             for f in files:
-                # Save file logic here
-                pass
-            response_text += f"Uploaded {len(files)} file(s). "
+                # Save file to disk
+                file_path = os.path.join(UPLOAD_DIR, f.name)
+                with open(file_path, "wb+") as dest:
+                    for chunk in f.chunks():
+                        dest.write(chunk)
+                
+                # Process PDF files
+                if f.name.endswith('.pdf'):
+                    import PyPDF2
+                    with open(file_path, 'rb') as pdf_file:
+                        reader = PyPDF2.PdfReader(pdf_file)
+                        text = ""
+                        for page in reader.pages:
+                            text += page.extract_text() + "\n"
+                    
+                    print(f"Extracted text length: {len(text)}")  # Debug
+                    
+                    # Create document record
+                    doc = Document.objects.create(
+                        title=f.name,
+                        uploaded_by=request.user,
+                        file=f
+                    )
+                    
+                    # Process with RAG
+                    process_document(doc, text)
+                    print(f"Document processed: {doc.id}")  # Debug
+            
+            response_text += f"Uploaded and processed {len(files)} document(s). "
         
+        # Handle questions
         if message:
-            response_text += f"You said: {message}"
+            print(f"Searching for: {message}")  # Debug
+            results = search_similar_chunks(message, top_k=5)
+            print(f"Search results count: {len(results)}")  # Debug
+            
+            if results:
+                context = "\n".join([result["text"] for result in results])
+                answer = generate_answer(message, context)
+                response_text += answer
+            else:
+                response_text += f"No relevant documents found for '{message}'. Try uploading some documents first."
         
+        if not response_text:
+            response_text = "Please provide a message or upload a file."
+            
         return Response({"answer": response_text})
         
     except Exception as e:
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         return Response({"detail": str(e)}, status=500)

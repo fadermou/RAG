@@ -16,10 +16,8 @@ RUN pip freeze > requirements.txt
 # RUN pip install -r requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# COPY manage.py .
-# RUN python3 manage.py migrate
-# how to write in cmd two command lines
+# RUN python3 manage.py migrate ########### don't forget to add this
+# COPY init_qdrant.py .
+# RUN python3 manage.py shell -c "from backend.services.qdrant_service import init_qdrant; init_qdrant()"
 
-# CMD [ "python3", "manage.py", "f" ]
-
-CMD [ "tail", "-f" ]
+# CMD [ "tail", "-f" ]

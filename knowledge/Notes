@@ -47,8 +47,11 @@ How jwt is exactly working
 ADD makemigrations in the dockerfile of django
 Do I refresh the token??
 Postgresql does save vectors why then are we using Qdrant?
+What is Vector approach
 CHECK services and urls in backend
 CHECK models in DOCUMENTS later and VIEWS
+Why am I using init_qdrant, dont forget to check code
+README :why vector approachis the best
 
 
 EXPLAIN THIS:
