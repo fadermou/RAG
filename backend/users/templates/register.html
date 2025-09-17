@@ -1,47 +1,45 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Register - AI Assistant{% endblock %}
 
 {% block content %}
-<h2>Sign Up</h2>
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 
-<form id="register-form">
-  <input type="text" id="username" placeholder="Username" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button type="submit">Register</button>
-</form>
+<div class="floating-shapes">
+  <div class="shape"></div>
+  <div class="shape"></div>
+  <div class="shape"></div>
+</div>
 
-<p id="register-error" style="color: red;"></p>
+<div class="auth-container">
+  <div class="auth-header">
+    <h1>Create Account</h1>
+    <p>Join our AI assistant platform</p>
+  </div>
 
-<script>
-document.getElementById("register-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  <form id="register-form">
+    <div id="message-container"></div>
+    
+    <div class="form-group">
+      <input type="text" id="username" class="form-input" placeholder="Username" required>
+    </div>
+    
+    <div class="form-group">
+      <input type="password" id="password" class="form-input" placeholder="Password" required>
+      <div id="password-strength" class="password-strength"></div>
+    </div>
+    
+    <button type="submit" class="auth-button" id="register-button">
+      <div class="loading-spinner"></div>
+      <span class="button-text">Create Account</span>
+    </button>
+  </form>
 
-  try {
-    const res = await fetch("/user/api/register/", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ username, password })
-    });
+  <div class="auth-footer">
+    <p>Already have an account? <a href="/user/login/">Sign in</a></p>
+  </div>
+</div>
 
-    const data = await res.json();
-
-    if (res.ok) {
-      console.log("SAAALAAAM")
-      localStorage.setItem("accessToken", data.access);
-      localStorage.setItem("refreshToken", data.refresh);
-
-      // Redirect to home since user is already authenticated
-      window.location.href = "/user/upload";
-    } else {
-      document.getElementById("register-error").textContent =
-        data.detail || "Registration failed";
-    }
-  } catch (err) {
-    document.getElementById("register-error").textContent = "Network error";
-  }
-});
-</script>
+<script src="{% static 'js/register.js' %}"></script>
 {% endblock %}

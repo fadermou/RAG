@@ -1,4 +1,4 @@
-import os
+import os, sys
 from rest_framework import status
 from django.contrib import messages
 from django.db import IntegrityError
@@ -16,6 +16,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from backend.services.document_service import process_document, search_similar_chunks
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 # ----- LOGIN VIEW -----
@@ -129,44 +130,25 @@ class RegisterAPIView(APIView):
 
 
 # ----- CHAT VIEW -----
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)  # ensure upload folder exists
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def chat_view(request):
+def chat_page(request):
     try:
         message = request.data.get("message", "").strip()
         files = request.FILES.getlist("files")
-
+        
         response_text = ""
-
-        # Case 1: Files uploaded
+        
         if files:
             for f in files:
-                file_path = os.path.join(UPLOAD_DIR, f.name)
-                with open(file_path, "wb+") as dest:
-                    for chunk in f.chunks():
-                        dest.write(chunk)
-            response_text += f"✅ Uploaded {len(files)} file(s). "
-
-        # Case 2: Message (query)
+                # Save file logic here
+                pass
+            response_text += f"Uploaded {len(files)} file(s). "
+        
         if message:
-            # Hook into your RAG pipeline here
-            rag_answer = f"I received your question: '{message}'."
-            response_text += rag_answer
-
-        if not response_text:
-            return Response(
-                {"detail": "Please provide a message or file."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return Response({"answer": response_text}, status=status.HTTP_200_OK)
-
+            response_text += f"You said: {message}"
+        
+        return Response({"answer": response_text})
+        
     except Exception as e:
-        # Catch all errors and return JSON
-        return Response(
-            {"detail": f"Server error: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({"detail": str(e)}, status=500)

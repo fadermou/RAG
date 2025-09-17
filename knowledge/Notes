@@ -43,9 +43,12 @@ What are embeddings?
 How is embeddings connected to vectors and to Qdrant?
 Why did we seperate code, services folder that got embeddings and Qdrant connection by itself?
 Why are we saving using UUID not just ID
-CHECK services and urls in backend
 How jwt is exactly working
 ADD makemigrations in the dockerfile of django
+Do I refresh the token??
+Postgresql does save vectors why then are we using Qdrant?
+CHECK services and urls in backend
+CHECK models in DOCUMENTS later and VIEWS
 
 
 EXPLAIN THIS:

@@ -1,56 +1,44 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Login - AI Assistant{% endblock %}
 
 {% block content %}
-<h2>Login</h2>
-<form id="login-form">
-  <input type="text" id="username" placeholder="Username" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button type="submit">Login</button>
-</form>
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 
-<p id="login-error" style="color:red;"></p>
-<p id="login-success" style="color:green;"></p>
-<p id="login-debug" style="color:blue;"></p>
+<div class="floating-shapes">
+  <div class="shape"></div>
+  <div class="shape"></div>
+  <div class="shape"></div>
+</div>
 
-<script>
-  document.getElementById("login-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-  
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-  
-    if (!username || !password) {
-      document.getElementById("login-error").textContent = "Please fill in both fields";
-      return;
-    }
-  
-    try {
-      const res = await fetch("/user/login/", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({username, password})
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok && data.success) {
-        // Save tokens
-        localStorage.setItem("accessToken", data.access);
-        if (data.refresh) localStorage.setItem("refreshToken", data.refresh);
-  
-        // Redirect using the redirect value returned by backend
-        const redirectUrl = data.redirect || "/user/upload/";
-        window.location.href = redirectUrl;
-      } else {
-        // Show error from backend
-        document.getElementById("login-error").textContent = data.error || data.detail || "Login failed";
-      }
-    } catch (err) {
-      document.getElementById("login-error").textContent = "Network error";
-    }
-  });
-  </script>
-  
+<div class="auth-container">
+  <div class="auth-header">
+    <h1>Welcome Back</h1>
+    <p>Sign in to your account</p>
+  </div>
+
+  <form id="login-form">
+    <div id="message-container"></div>
+    
+    <div class="form-group">
+      <input type="text" id="username" class="form-input" placeholder="Username" required>
+    </div>
+    
+    <div class="form-group">
+      <input type="password" id="password" class="form-input" placeholder="Password" required>
+    </div>
+    
+    <button type="submit" class="auth-button" id="login-button">
+      <div class="loading-spinner"></div>
+      <span class="button-text">Sign In</span>
+    </button>
+  </form>
+
+  <div class="auth-footer">
+    <p>Don't have an account? <a href="/user/register/">Create one</a></p>
+  </div>
+</div>
+
+<script src="{% static 'js/login.js' %}"></script>
 {% endblock %}

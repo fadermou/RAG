@@ -9,6 +9,9 @@ from documents.models import DocumentChunk, Document
 # 1️⃣ Save a single chunk to Qdrant
 # -------------------------
 def save_chunk_to_qdrant(chunk: DocumentChunk):
+    """
+    takes chunk of text, converts it to embeddings using your embedding service, then stores both the vector and metadata in Qdrant vector database
+    """
     embedding = embed_text(chunk.text)
 
     qdrant_client.upsert(
@@ -36,7 +39,7 @@ def save_chunk_to_qdrant(chunk: DocumentChunk):
 # -------------------------
 def split_text_into_chunks(text: str, chunk_size: int = 500) -> List[str]:
     """
-    Splits text into chunks of approximately `chunk_size` words.
+    Splits text into chunks of approximately `chunk_size` (500-word) words.
     """
     words = text.split()
     chunks = []
