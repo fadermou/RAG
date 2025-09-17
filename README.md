@@ -177,7 +177,7 @@ project/
 - Django community for the excellent framework
 
 ## 📺 Demo Video
-The demo.mov file is too large to host on GitHub. You can download it here: [Download demo.mov](https://drive.google.com/drive/folders/1PJJwJxrH40OpxudnMW684nPwcu_YQxzC)
+The demo.mov file is too large to host on GitHub. You can download it here: [demo.mov](https://drive.google.com/drive/folders/1PJJwJxrH40OpxudnMW684nPwcu_YQxzC)
 
 ---
 
