@@ -1,8 +1,14 @@
-# Environment
-.env
+# stop tracking .env
+git rm --cached .env  
 
-# Knowledge
-knowledge/*
-# Editor directories and files
-.vscode/*
-.DS_Store
+# stop tracking knowledge directory (if it exists and is tracked)
+git rm -r --cached knowledge  
+
+# now add the .gitignore change too
+git add .gitignore  
+
+# commit changes
+git commit -m "Untrack .env and knowledge folder; update .gitignore"
+
+# push to remote
+git push
