@@ -22,6 +22,8 @@ def save_chunk_to_qdrant(chunk: DocumentChunk):
                     "document_id": str(chunk.document.id),
                     "chunk_index": chunk.chunk_index,
                     "text": chunk.text,
+                    "user_id": chunk.document.uploaded_by.id  # Add this line
+
                 }
             }
         ]
@@ -69,7 +71,7 @@ def process_document(document: Document, text: str, chunk_size: int = 500):
 # -------------------------
 # 4️⃣ Search for similar chunks
 # -------------------------
-def search_similar_chunks(query: str, top_k: int = 5):
+def search_similar_chunks(query: str, user_id: str, top_k: int = 5):
     """
     Embeds the query, searches Qdrant, and returns top-k relevant chunks.
     """
@@ -77,6 +79,9 @@ def search_similar_chunks(query: str, top_k: int = 5):
     results = qdrant_client.search(
         collection_name="document_chunks",
         query_vector=query_vector,
+        query_filter={
+            "must": [{"key": "user_id", "match": {"value": user_id}}]
+        },
         limit=top_k
     )
 
@@ -91,3 +96,4 @@ def search_similar_chunks(query: str, top_k: int = 5):
         for point in results
     ]
     return simplified_results
+

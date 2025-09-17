@@ -88,7 +88,7 @@ def upload_page(request):
         elif action == "ask":
             query = request.POST.get("query")
             if query:
-                results = search_similar_chunks(query, top_k=5)
+                results = search_similar_chunks(query, request.user.id, top_k=5) ## Top-5 most relevant chunks retrieved
                 chunks_text = "\n".join([r.payload["text"] for r in results])
                 answer = generate_answer(query, chunks_text)
 
@@ -151,32 +151,48 @@ def chat_page(request):
                 
                 # Process PDF files
                 if f.name.endswith('.pdf'):
-                    import PyPDF2
-                    with open(file_path, 'rb') as pdf_file:
-                        reader = PyPDF2.PdfReader(pdf_file)
-                        text = ""
-                        for page in reader.pages:
-                            text += page.extract_text() + "\n"
-                    
-                    print(f"Extracted text length: {len(text)}")  # Debug
-                    
-                    # Create document record
-                    doc = Document.objects.create(
-                        title=f.name,
-                        uploaded_by=request.user,
-                        file=f
-                    )
-                    
-                    # Process with RAG
-                    process_document(doc, text)
-                    print(f"Document processed: {doc.id}")  # Debug
+                    try:
+                        import PyPDF2
+                        with open(file_path, 'rb') as pdf_file:
+                            reader = PyPDF2.PdfReader(pdf_file)
+                            text = ""
+                            for page in reader.pages:
+                                page_text = page.extract_text()
+                                # Clean the text to remove NUL characters and other problematic chars
+                                if page_text:
+                                    clean_text = page_text.replace('\x00', '').replace('\0', '')
+                                    # Remove other problematic characters
+                                    clean_text = ''.join(char for char in clean_text if ord(char) >= 32 or char in '\n\r\t')
+                                    text += clean_text + "\n"
+                        
+                        if not text.strip():
+                            response_text += f"Could not extract readable text from {f.name}. The file may contain only images or be corrupted. "
+                            continue
+                            
+                        print(f"Extracted text length: {len(text)}")  # Debug
+                        
+                        # Create document record
+                        doc = Document.objects.create(
+                            title=f.name,
+                            uploaded_by=request.user,
+                            file=f
+                        )
+                        
+                        # Process with RAG
+                        process_document(doc, text)
+                        print(f"Document processed: {doc.id}")  # Debug
+                        
+                    except Exception as pdf_error:
+                        print(f"PDF processing error: {pdf_error}")
+                        response_text += f"Error processing {f.name}: The file may be password-protected or corrupted. Please try a different PDF. "
+                        continue
             
             response_text += f"Uploaded and processed {len(files)} document(s). "
         
         # Handle questions
         if message:
             print(f"Searching for: {message}")  # Debug
-            results = search_similar_chunks(message, top_k=5)
+            results = search_similar_chunks(message, request.user.id, top_k=5)
             print(f"Search results count: {len(results)}")  # Debug
             
             if results:
